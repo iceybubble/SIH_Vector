@@ -26,35 +26,22 @@ export default function VoiceTalk() {
       recognition.lang = "en-US";
       
       recognition.onresult = (event) => {
-        let interimTranscript = "";
-        let finalSegment = "";
+        let currentTranscript = "";
         
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          if (event.results[i].isFinal) {
-            finalSegment += event.results[i][0].transcript + " ";
-          } else {
-            interimTranscript += event.results[i][0].transcript + " ";
-          }
+        for (let i = 0; i < event.results.length; i++) {
+          currentTranscript += event.results[i][0].transcript + " ";
         }
         
-        if (finalSegment) {
-          setFinalTranscriptText((prev) => {
-            const newFinal = prev + finalSegment;
-            setTranscript(newFinal + interimTranscript);
-            return newFinal;
-          });
-        } else {
-          setFinalTranscriptText((prev) => {
-            setTranscript(prev + interimTranscript);
-            return prev;
-          });
-        }
+        setTranscript(currentTranscript);
       };
       
       recognition.onerror = (event) => {
         console.error("Speech recognition error:", event.error);
-        if (event.error !== "no-speech") {
-          setErrorMsg("Microphone error. Please try again.");
+        if (event.error === "not-allowed") {
+          setErrorMsg("Microphone access denied. Please allow microphone permissions in your browser.");
+          setIsRecording(false);
+        } else if (event.error !== "no-speech") {
+          setErrorMsg("Microphone error (" + event.error + "). Please try again.");
           setIsRecording(false);
         }
       };
